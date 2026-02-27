@@ -1,0 +1,78 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+    "./lib/**/*.{js,jsx,ts,tsx}",
+  ],
+  presets: [require("nativewind/preset")],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: "#E9F7FB",
+          100: "#CFEFF7",
+          200: "#A7E0EE",
+          300: "#74CBE2",
+          400: "#4FB7D3",
+          500: "#4E9FBA",
+          600: "#3F88A2",
+          700: "#2F6A7F",
+          800: "#245463",
+          900: "#1E4552",
+        },
+        secondary: {
+          50: "#EEF5FF",
+          100: "#DCEAFF",
+          200: "#BBD7FF",
+          300: "#90BFFF",
+          400: "#6AA7F2",
+          500: "#769BC7",
+          600: "#5C7FA8",
+          700: "#466183",
+          800: "#354B66",
+          900: "#2B3D54",
+        },
+        neutral: {
+          0: "#FFFFFF",
+          25: "#F7FAF8",
+          50: "#F1F5F2",
+          100: "#E4ECE6",
+          200: "#D2DDD6",
+          300: "#B9C7BF",
+          400: "#9AA99F",
+          500: "#7C8A82",
+          600: "#5F6B64",
+          700: "#47514C",
+          800: "#2F3733",
+          900: "#1A1F1D",
+        },
+        success: {
+          50: "#EAF7EF",
+          100: "#D0F0DB",
+          200: "#A3E2B8",
+          500: "#26B866",
+          600: "#1F8A4C",
+          700: "#177A3E",
+        },
+        warning: {
+          50: "#FFF6E7",
+          100: "#FFEDD0",
+          500: "#D97706",
+          600: "#A86100",
+        },
+        error: {
+          50: "#FFECEC",
+          100: "#FFDADA",
+          200: "#FFC4C4",
+          500: "#DC2626",
+          600: "#B42318",
+        },
+      },
+      fontFamily: {
+        sans: ["System"],
+      },
+    },
+  },
+  plugins: [],
+};
