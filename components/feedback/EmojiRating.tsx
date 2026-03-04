@@ -34,8 +34,8 @@ export function EmojiRating({
             <View
               className={`w-14 h-14 rounded-full items-center justify-center ${
                 isSelected
-                  ? "bg-primary-100 dark:bg-primary-900/30"
-                  : "bg-neutral-100 dark:bg-neutral-800"
+                  ? "bg-primary-100"
+                  : "bg-neutral-100"
               }`}
             >
               <Text className="text-2xl">{item.emoji}</Text>
@@ -44,8 +44,8 @@ export function EmojiRating({
               <Text
                 className={`text-xs mt-1 ${
                   isSelected
-                    ? "text-primary-600 dark:text-primary-400 font-medium"
-                    : "text-neutral-500 dark:text-neutral-400"
+                    ? "text-primary-600 font-medium"
+                    : "text-neutral-500"
                 }`}
               >
                 {item.label}

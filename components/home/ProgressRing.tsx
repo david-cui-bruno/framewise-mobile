@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import { useColorScheme } from "nativewind";
 import Svg, { Circle } from "react-native-svg";
 import { getRingColors } from "@/constants/theme";
 
@@ -14,9 +13,7 @@ export function ProgressRing({
   totalDays,
   size = 144,
 }: ProgressRingProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = getRingColors(isDark);
+  const colors = getRingColors();
 
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
@@ -61,10 +58,10 @@ export function ProgressRing({
         />
       </Svg>
       <View className="items-center z-10">
-        <Text className="text-3xl font-bold text-primary-500 dark:text-primary-400">
+        <Text className="text-3xl font-bold text-primary-500">
           Day {currentDay}
         </Text>
-        <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+        <Text className="text-sm text-neutral-500">
           of {totalDays}
         </Text>
       </View>

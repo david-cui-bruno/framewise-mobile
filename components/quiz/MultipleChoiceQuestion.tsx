@@ -1,6 +1,13 @@
 import { View, Text, Pressable } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import type { QuizOption } from "@/app/(protected)/quiz/[quizId]";
+import { colors } from "@/constants/colors";
+
+export interface QuizOption {
+  id: string;
+  option_text: string;
+  is_correct: boolean;
+  feedback_text: string | null;
+}
 
 interface MultipleChoiceQuestionProps {
   question: string;
@@ -19,7 +26,7 @@ export function MultipleChoiceQuestion({
 }: MultipleChoiceQuestionProps) {
   return (
     <View className="gap-4">
-      <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-0">
+      <Text className="text-lg font-semibold text-neutral-900">
         {question}
       </Text>
       <View className="gap-3">
@@ -36,24 +43,24 @@ export function MultipleChoiceQuestion({
               disabled={showFeedback}
               className={`rounded-2xl p-4 border-2 ${
                 showCorrect
-                  ? "border-success-500 bg-success-50 dark:bg-success-900/20"
+                  ? "border-success-500 bg-success-50"
                   : showWrong
-                  ? "border-error-500 bg-error-50 dark:bg-error-900/20"
+                  ? "border-error-500 bg-error-50"
                   : isSelected
-                  ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                  : "border-neutral-300 dark:border-neutral-700 bg-neutral-0 dark:bg-neutral-800"
+                  ? "border-primary-500 bg-primary-50"
+                  : "border-neutral-300 bg-neutral-0"
               }`}
             >
               <View className="flex-row items-center justify-between">
                 <Text
                   className={`flex-1 text-base ${
                     showCorrect
-                      ? "text-success-700 dark:text-success-300"
+                      ? "text-success-700"
                       : showWrong
-                      ? "text-error-700 dark:text-error-300"
+                      ? "text-error-700"
                       : isSelected
-                      ? "text-primary-700 dark:text-primary-300"
-                      : "text-neutral-900 dark:text-neutral-0"
+                      ? "text-primary-700"
+                      : "text-neutral-900"
                   }`}
                 >
                   {option.option_text}
@@ -61,9 +68,9 @@ export function MultipleChoiceQuestion({
                 {showFeedback && (isCorrect || showWrong) && (
                   <View className="ml-2">
                     {isCorrect ? (
-                      <CheckCircleIcon color="#16A34A" />
+                      <CheckCircleIcon color={colors.success} />
                     ) : (
-                      <XCircleIcon color="#DC2626" />
+                      <XCircleIcon color={colors.danger} />
                     )}
                   </View>
                 )}

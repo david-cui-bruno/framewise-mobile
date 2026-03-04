@@ -1,30 +1,27 @@
 import { View, Text } from "react-native";
 import Svg, { Path, Circle } from "react-native-svg";
-import { useColorScheme } from "nativewind";
+import { colors } from "@/constants/colors";
 
 interface NoResultsFallbackProps {
   query: string;
 }
 
 export function NoResultsFallback({ query }: NoResultsFallbackProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   return (
     <View className="flex-1 items-center justify-center p-6 py-12">
       <View className="w-16 h-16 mb-4 items-center justify-center">
-        <SearchXIcon color={isDark ? "#6B7280" : "#9CA3AF"} />
+        <SearchXIcon color={colors.textSubtle} />
       </View>
 
-      <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-0 mb-2 text-center">
+      <Text className="text-lg font-semibold text-neutral-900 mb-2 text-center">
         No results found
       </Text>
 
-      <Text className="text-base text-neutral-600 dark:text-neutral-400 text-center mb-1">
+      <Text className="text-base text-neutral-600 text-center mb-1">
         We couldn't find anything for "{query}"
       </Text>
 
-      <Text className="text-sm text-neutral-500 dark:text-neutral-500 text-center mt-4">
+      <Text className="text-sm text-neutral-500 text-center mt-4">
         Try rephrasing your question or asking about a different topic.
       </Text>
     </View>

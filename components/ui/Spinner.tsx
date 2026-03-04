@@ -1,4 +1,5 @@
 import { View, ActivityIndicator } from "react-native";
+import { colors } from "@/constants/colors";
 
 interface SpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -8,14 +9,14 @@ interface SpinnerProps {
 
 const sizeMap = {
   sm: "small" as const,
-  md: "small" as const,
+  md: 28,
   lg: "large" as const,
 };
 
 export function Spinner({
   size = "md",
   className = "",
-  color = "#4E9FBA"
+  color = colors.primary
 }: SpinnerProps) {
   return (
     <View className={className}>

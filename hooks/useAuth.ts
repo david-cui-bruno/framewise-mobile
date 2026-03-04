@@ -8,6 +8,9 @@ export interface Patient {
   display_name: string | null;
   avatar_id: string;
   onboarding_completed: boolean;
+  preferred_language: string;
+  text_size: "small" | "medium" | "large" | "extra_large";
+  playback_speed: number;
 }
 
 interface AuthState {
@@ -25,11 +28,14 @@ export function useAuth() {
 
   const fetchPatient = useCallback(
     async (userId: string): Promise<Patient | null> => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("patients")
         .select("*")
         .eq("id", userId)
         .single();
+      if (error) {
+        console.error("Error fetching patient:", error);
+      }
       return data;
     },
     []
@@ -56,25 +62,58 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    // Initial session check
-    refreshSession();
+    let isMounted = true;
 
-    // Listen for auth changes
+    // Initial session check
+    const initSession = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!isMounted) return;
+
+        if (user) {
+          const patient = await fetchPatient(user.id);
+          if (isMounted) {
+            setState({ user, patient, isLoading: false });
+          }
+        } else {
+          setState({ user: null, patient: null, isLoading: false });
+        }
+      } catch (error) {
+        console.error("Failed to initialize session:", error);
+        if (isMounted) {
+          setState({ user: null, patient: null, isLoading: false });
+        }
+      }
+    };
+
+    initSession();
+
+    // Listen for auth changes (skips INITIAL_SESSION to avoid duplicate fetch)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
+      if (event === "INITIAL_SESSION") return;
+
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
         const patient = await fetchPatient(session.user.id);
-        setState({ user: session.user, patient, isLoading: false });
+        if (isMounted) {
+          setState({ user: session.user, patient, isLoading: false });
+        }
       } else if (event === "SIGNED_OUT") {
-        setState({ user: null, patient: null, isLoading: false });
+        if (isMounted) {
+          setState({ user: null, patient: null, isLoading: false });
+        }
       }
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchPatient, refreshSession]);
+  }, [fetchPatient]);
 
   return {
     user: state.user,

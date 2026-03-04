@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { AvatarSelector, AVATARS } from "./AvatarSelector";
 
 interface AvatarGridProps {
@@ -19,12 +19,12 @@ export function AvatarGrid({
   return (
     <View>
       {title && (
-        <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-0 mb-1">
+        <Text className="text-lg font-semibold text-neutral-900 mb-1">
           {title}
         </Text>
       )}
       {subtitle && (
-        <Text className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        <Text className="text-sm text-neutral-600 mb-4">
           {subtitle}
         </Text>
       )}
@@ -51,25 +51,28 @@ function CompactGrid({
         const isSelected = selectedAvatar === avatar.id;
 
         return (
-          <View key={avatar.id} className="w-[23%] items-center mb-4">
+          <Pressable
+            key={avatar.id}
+            onPress={() => onSelect(avatar.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Select avatar ${avatar.name}`}
+            className="w-[23%] items-center mb-4"
+          >
             <View
               className={`w-16 h-16 rounded-full items-center justify-center mb-1 ${
                 isSelected
-                  ? "bg-primary-100 dark:bg-primary-900/30 border-2 border-primary-500"
-                  : "bg-neutral-100 dark:bg-neutral-800 border-2 border-transparent"
+                  ? "bg-primary-100 border-2 border-primary-500"
+                  : "bg-neutral-100 border-2 border-transparent"
               }`}
             >
-              <Text
-                className="text-3xl"
-                onPress={() => onSelect(avatar.id)}
-              >
+              <Text className="text-3xl">
                 {avatar.emoji}
               </Text>
             </View>
-            <Text className="text-xs text-neutral-600 dark:text-neutral-400">
+            <Text className="text-xs text-neutral-600">
               {avatar.name}
             </Text>
-          </View>
+          </Pressable>
         );
       })}
     </View>

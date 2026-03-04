@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from "react-native";
-import { useColorScheme } from "nativewind";
 import Svg, { Path } from "react-native-svg";
+import { colors } from "@/constants/colors";
 
 interface DateNavigatorProps {
   selectedDate: Date;
@@ -11,9 +11,6 @@ export function DateNavigator({
   selectedDate,
   onDateChange,
 }: DateNavigatorProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -49,12 +46,12 @@ export function DateNavigator({
     });
   };
 
-  const chevronColor = isDark ? "#9CA3AF" : "#6B7280";
+  const chevronColor = colors.iconDefault;
 
   return (
-    <View className="bg-neutral-0 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
+    <View className="bg-neutral-0 rounded-2xl p-4 mb-4">
       <View className="flex-row items-center justify-between">
-        <Pressable onPress={goToPreviousDay} className="p-2">
+        <Pressable onPress={goToPreviousDay} className="p-3" hitSlop={4} accessibilityRole="button" accessibilityLabel="Previous day">
           <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
             <Path
               d="M15 19l-7-7 7-7"
@@ -67,10 +64,10 @@ export function DateNavigator({
         </Pressable>
 
         <View className="flex-1 items-center">
-          <Text className="text-lg font-semibold text-neutral-900 dark:text-neutral-0">
+          <Text className="text-lg font-semibold text-neutral-900">
             {formatDate(selected)}
           </Text>
-          <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+          <Text className="text-sm text-neutral-500">
             {selected.toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
@@ -79,7 +76,7 @@ export function DateNavigator({
           </Text>
         </View>
 
-        <Pressable onPress={goToNextDay} className="p-2">
+        <Pressable onPress={goToNextDay} className="p-3" hitSlop={4} accessibilityRole="button" accessibilityLabel="Next day">
           <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
             <Path
               d="M9 5l7 7-7 7"
@@ -95,9 +92,9 @@ export function DateNavigator({
       {!isToday && (
         <Pressable
           onPress={() => onDateChange(new Date())}
-          className="mt-3 py-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg"
+          className="mt-3 py-2 bg-primary-50 rounded-lg"
         >
-          <Text className="text-center text-sm font-medium text-primary-700 dark:text-primary-300">
+          <Text className="text-center text-sm font-medium text-primary-700">
             Jump to Today
           </Text>
         </Pressable>

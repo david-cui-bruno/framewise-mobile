@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from "react-native";
-import { useColorScheme } from "nativewind";
 import Svg, { Path } from "react-native-svg";
 import { getShadow } from "@/constants/theme";
+import { colors } from "@/constants/colors";
 
 interface VideoThumbCardProps {
   title: string;
@@ -16,27 +16,24 @@ export function VideoThumbCard({
   completed = false,
   onPress,
 }: VideoThumbCardProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   return (
     <Pressable onPress={onPress} className="w-[48%] mb-4">
       <View
-        className="rounded-xl overflow-hidden mb-2 bg-neutral-100 dark:bg-neutral-800"
-        style={[{ aspectRatio: 16 / 9 }, getShadow(isDark, "sm")]}
+        className="rounded-xl overflow-hidden mb-2 bg-neutral-100"
+        style={[{ aspectRatio: 16 / 9 }, getShadow("sm")]}
       >
         <View className="w-full h-full items-center justify-center">
           <View
             className={`w-12 h-12 rounded-full items-center justify-center ${
               completed
-                ? "bg-success-100 dark:bg-success-900/20"
-                : "bg-primary-100 dark:bg-primary-900/20"
+                ? "bg-success-100"
+                : "bg-primary-100"
             }`}
           >
             {completed ? (
-              <CheckIcon color={isDark ? "#22C55E" : "#16A34A"} />
+              <CheckIcon color={colors.success} />
             ) : (
-              <PlayIcon color={isDark ? "#4FB7D3" : "#4E9FBA"} />
+              <PlayIcon color={colors.primary} />
             )}
           </View>
 
@@ -53,8 +50,8 @@ export function VideoThumbCard({
       <Text
         className={`text-sm font-medium ${
           completed
-            ? "text-neutral-500 dark:text-neutral-500"
-            : "text-neutral-900 dark:text-neutral-0"
+            ? "text-neutral-500"
+            : "text-neutral-900"
         }`}
         numberOfLines={2}
       >

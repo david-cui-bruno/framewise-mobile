@@ -1,13 +1,13 @@
 import { View, Text, Pressable } from "react-native";
-import { useColorScheme } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { getShadow } from "@/constants/theme";
+import { colors } from "@/constants/colors";
 
 interface FeaturedTaskCardProps {
   title: string;
   description?: string | null;
-  taskType: "watch_video" | "answer_quiz";
+  taskType: "watch_video" | "answer_quiz" | "take_medication";
   onPress: () => void;
 }
 
@@ -17,17 +17,14 @@ export function FeaturedTaskCard({
   taskType,
   onPress,
 }: FeaturedTaskCardProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   return (
     <Pressable onPress={onPress}>
       <View
         className="rounded-2xl overflow-hidden"
-        style={[{ height: 180 }, getShadow(isDark, "card")]}
+        style={[{ height: 180 }, getShadow("card")]}
       >
         <LinearGradient
-          colors={isDark ? ["#0097A7", "#16A34A"] : ["#4E9FBA", "#26B866"]}
+          colors={[colors.skyGradientStart, colors.skyGradientEnd]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ width: "100%", height: "100%" }}
@@ -75,7 +72,7 @@ export function FeaturedTaskCard({
 function PlayIcon() {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path d="M8 5v14l11-7z" fill="#4E9FBA" />
+      <Path d="M8 5v14l11-7z" fill={colors.primary} />
     </Svg>
   );
 }
@@ -85,7 +82,7 @@ function QuizIcon() {
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       <Path
         d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke="#4E9FBA"
+        stroke={colors.primary}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"

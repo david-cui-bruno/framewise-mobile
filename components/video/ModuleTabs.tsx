@@ -19,7 +19,7 @@ export function ModuleTabs({
   ];
 
   return (
-    <View className="flex-row border-b border-neutral-200 dark:border-neutral-700">
+    <View className="flex-row border-b border-neutral-200">
       {tabs.map((tab) => (
         <Pressable
           key={tab.id}
@@ -29,14 +29,14 @@ export function ModuleTabs({
           <Text
             className={`text-center font-medium ${
               activeTab === tab.id
-                ? "text-primary-600 dark:text-primary-400"
-                : "text-neutral-500 dark:text-neutral-400"
+                ? "text-primary-600"
+                : "text-neutral-500"
             }`}
           >
             {tab.label}
           </Text>
           {activeTab === tab.id && (
-            <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400" />
+            <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
           )}
         </Pressable>
       ))}

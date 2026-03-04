@@ -28,14 +28,14 @@ export function AvatarSelector({
         <Pressable
           key={avatar.id}
           onPress={() => onSelect(avatar.id)}
-          className={`w-[48%] bg-neutral-0 dark:bg-neutral-800 rounded-2xl p-6 mb-4 items-center ${
+          className={`w-[48%] bg-neutral-0 rounded-2xl p-6 mb-4 items-center ${
             selectedAvatar === avatar.id
               ? "border-2 border-primary-500"
               : "border-2 border-transparent"
           }`}
         >
           <Text className="text-5xl mb-2">{avatar.emoji}</Text>
-          <Text className="text-base font-medium text-neutral-900 dark:text-neutral-0">
+          <Text className="text-base font-medium text-neutral-900">
             {avatar.name}
           </Text>
         </Pressable>

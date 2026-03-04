@@ -20,8 +20,8 @@ export function ChecklistItem({ title, isCompleted, href }: ChecklistItemProps) 
       <View
         className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
           isCompleted
-            ? "bg-success-500 border-success-500 dark:bg-success-600 dark:border-success-600"
-            : "border-neutral-300 dark:border-neutral-600 bg-neutral-0 dark:bg-neutral-800"
+            ? "bg-success-500 border-success-500"
+            : "border-neutral-300 bg-neutral-0"
         }`}
       >
         {isCompleted && (
@@ -41,8 +41,8 @@ export function ChecklistItem({ title, isCompleted, href }: ChecklistItemProps) 
       <Text
         className={`text-base flex-1 ${
           isCompleted
-            ? "text-neutral-400 dark:text-neutral-500 line-through"
-            : "text-neutral-900 dark:text-neutral-0"
+            ? "text-neutral-400 line-through"
+            : "text-neutral-900"
         }`}
       >
         {title}

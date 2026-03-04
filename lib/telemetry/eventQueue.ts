@@ -24,6 +24,7 @@ export interface TelemetryEvent {
 
 const BATCH_SIZE = 10;
 const FLUSH_INTERVAL = 30000; // 30 seconds
+const MAX_QUEUE_SIZE = 500;
 
 class TelemetryEventQueue {
   private queue: TelemetryEvent[] = [];
@@ -73,25 +74,25 @@ class TelemetryEventQueue {
 
       if (error) {
         console.error("Error flushing telemetry events:", error);
-        // Re-add events to queue on failure
-        this.queue = [...eventsToFlush, ...this.queue];
+        // Re-add events to queue on failure, capped to prevent unbounded growth
+        this.queue = [...eventsToFlush, ...this.queue].slice(0, MAX_QUEUE_SIZE);
       }
     } catch (err) {
       console.error("Error flushing telemetry events:", err);
-      // Re-add events to queue on failure
-      this.queue = [...eventsToFlush, ...this.queue];
+      // Re-add events to queue on failure, capped to prevent unbounded growth
+      this.queue = [...eventsToFlush, ...this.queue].slice(0, MAX_QUEUE_SIZE);
     } finally {
       this.isFlushing = false;
     }
   }
 
-  destroy() {
+  async destroy() {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
     // Final flush on destroy
-    this.flush();
+    await this.flush();
   }
 
   getQueueLength(): number {
