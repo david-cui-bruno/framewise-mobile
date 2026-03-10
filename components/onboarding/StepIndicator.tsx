@@ -7,7 +7,7 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
   return (
-    <View className="flex-row items-center justify-center gap-2 py-4">
+    <View className="flex-row items-center justify-center gap-3 py-4">
       {Array.from({ length: totalSteps }, (_, i) => {
         const isActive = i + 1 === currentStep;
         return (
@@ -15,8 +15,8 @@ export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
             key={i}
             className={
               isActive
-                ? "w-3 h-3 rounded-full bg-primary-500"
-                : "w-2 h-2 rounded-full bg-neutral-200"
+                ? "w-2.5 h-2.5 rounded-full bg-white"
+                : "w-1.5 h-1.5 rounded-full bg-white/40"
             }
           />
         );

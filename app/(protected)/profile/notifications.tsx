@@ -3,7 +3,9 @@ import { useRouter, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePatientPrefs } from "@/hooks/usePatientPrefs";
 import { colors } from "@/constants/colors";
-import Svg, { Path } from "react-native-svg";
+import { BlueGradient } from "@/components/ui/BlueGradient";
+import { ChevronIcon } from "@/components/icons/ChevronIcon";
+
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => {
   const hour = i % 12 || 12;
@@ -35,7 +37,7 @@ export default function NotificationPreferencesScreen() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <SafeAreaView className="flex-1 bg-neutral-50 items-center justify-center">
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.primaryBlue} />
         </SafeAreaView>
       </>
     );
@@ -44,19 +46,23 @@ export default function NotificationPreferencesScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <SafeAreaView className="flex-1 bg-neutral-50">
-        {/* Header */}
-        <View className="flex-row items-center px-4 py-3">
-          <Pressable
-            onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
-          >
-            <BackIcon />
-          </Pressable>
-          <Text className="flex-1 text-lg font-semibold text-neutral-900 text-center mr-10">
-            Notifications
-          </Text>
-        </View>
+      <View className="flex-1 bg-neutral-50">
+        {/* Gradient Header */}
+        <BlueGradient className="pt-14 pb-3">
+          <View className="flex-row items-center h-12 px-1">
+            <Pressable
+              onPress={() => router.back()}
+              className="w-10 h-10 items-center justify-center"
+            >
+              <ChevronIcon direction="left" />
+            </Pressable>
+            <View className="flex-1 items-center mr-10">
+              <Text className="text-base font-semibold text-white">
+                Notifications
+              </Text>
+            </View>
+          </View>
+        </BlueGradient>
 
         <View className="flex-1 px-4">
           {/* Notification Toggles */}
@@ -114,7 +120,7 @@ export default function NotificationPreferencesScreen() {
             </View>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     </>
   );
 }
@@ -181,16 +187,3 @@ function TimePicker({ value, onChange }: TimePickerProps) {
   );
 }
 
-function BackIcon() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M15 19l-7-7 7-7"
-        stroke={colors.textPrimary}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}

@@ -3,9 +3,11 @@ export const colors = {
   primary: "#067BF5",
   primaryLight: "#2890FA",
   primaryDark: "#045FCC",
+  primaryBlue: "#1D61E7",
 
-  skyGradientStart: "#5FAAF8",
-  skyGradientEnd: "#A8D6EA",
+  skyGradientStart: "#1D61E7",
+  gradientMid: "rgba(124,184,247,0.88)",
+  skyGradientEnd: "#D6E9FD",
 
   background: "#F7FAFB",
   backgroundAlt: "#F9FBFC",
@@ -21,7 +23,7 @@ export const colors = {
   textInverse: "#FFFFFF",
 
   iconDefault: "#64748B",
-  iconMuted: "#94A3B8",
+  iconMuted: "#9198A2",
 
   success: "#95CC71",
   successDark: "#578F34",

@@ -6,14 +6,14 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { MultipleChoiceQuestion, type QuizOption } from "@/components/quiz/MultipleChoiceQuestion";
-import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { BlueGradient } from "@/components/ui/BlueGradient";
+import { ChevronIcon } from "@/components/icons/ChevronIcon";
 import { colors } from "@/constants/colors";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Circle } from "react-native-svg";
 
 interface QuizQuestion {
   id: string;
@@ -39,12 +39,12 @@ export default function QuizScreen() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
     if (!quizId) return;
 
     const fetchQuiz = async () => {
-      // Fetch video module title
       const { data: moduleData } = await supabase
         .from("video_modules")
         .select("title")
@@ -53,7 +53,6 @@ export default function QuizScreen() {
 
       setVideoModule(moduleData as VideoModule | null);
 
-      // Fetch questions
       const { data: questionsData, error } = await supabase
         .from("quiz_questions")
         .select("id, question_text, question_order")
@@ -72,7 +71,6 @@ export default function QuizScreen() {
         question_order: number;
       }[];
 
-      // Fetch options for all questions
       const questionIds = rawQuestions.map((q) => q.id);
       const { data: optionsData } = await supabase
         .from("quiz_options")
@@ -121,22 +119,22 @@ export default function QuizScreen() {
   const handleSubmit = useCallback(async () => {
     if (!selectedOptionId || !currentQuestion || !patient || !quizId) return;
 
-    // Show feedback
     setShowFeedback(true);
 
     const selectedOption = currentQuestion.options.find(
       (o) => o.id === selectedOptionId
     );
-    if (selectedOption?.is_correct) {
+    const correct = selectedOption?.is_correct ?? false;
+    setIsCorrect(correct);
+    if (correct) {
       setScore((prev) => prev + 1);
     }
 
-    // Record response
     await supabase.from("quiz_responses").insert({
       patient_id: patient.id,
       question_id: currentQuestion.id,
       selected_option_id: selectedOptionId,
-      is_correct: selectedOption?.is_correct ?? false,
+      is_correct: correct,
     });
   }, [selectedOptionId, currentQuestion, patient, quizId]);
 
@@ -147,27 +145,28 @@ export default function QuizScreen() {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOptionId(null);
       setShowFeedback(false);
+      setIsCorrect(false);
     }
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-50 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color={colors.primaryBlue} />
+      </View>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-50 items-center justify-center">
+      <View className="flex-1 bg-white items-center justify-center">
         <Text className="text-neutral-500 text-base">
           No quiz questions found.
         </Text>
         <Pressable onPress={() => router.back()} className="mt-4">
-          <Text className="text-primary-500 font-semibold">Go Back</Text>
+          <Text className="text-[#1D61E7] font-semibold">Go Back</Text>
         </Pressable>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -175,125 +174,132 @@ export default function QuizScreen() {
     const passed = score >= Math.ceil(questions.length * 0.7);
 
     return (
-      <SafeAreaView className="flex-1 bg-neutral-50">
-        <View className="flex-1 items-center justify-center px-6">
-          <View
-            className={`w-24 h-24 rounded-full items-center justify-center mb-6 ${
-              passed ? "bg-success-100" : "bg-warning-100"
-            }`}
-          >
-            <Text className="text-5xl">{passed ? "🎉" : "📝"}</Text>
-          </View>
-
-          <Text className="text-2xl font-bold text-neutral-900 mb-2">
-            {passed ? "Great Job!" : "Keep Practicing"}
-          </Text>
-
-          <Text className="text-lg text-neutral-600 mb-1">
-            You scored {score} out of {questions.length}
-          </Text>
-
-          <Text
-            className={`text-base font-medium mb-8 ${
-              passed ? "text-success-600" : "text-warning-600"
-            }`}
-          >
-            {passed ? "You passed!" : "You need 70% to pass"}
-          </Text>
-
-          <Pressable
-            onPress={() => router.back()}
-            className="bg-primary-500 rounded-full py-4 px-12"
-          >
-            <Text className="text-white font-semibold text-base">Done</Text>
-          </Pressable>
+      <View className="flex-1 bg-white items-center justify-center px-6">
+        <View className="mb-6">
+          {passed ? <CorrectCheckmark /> : (
+            <View className="w-[120px] h-[120px] rounded-full bg-warning-100 items-center justify-center">
+              <Text className="text-5xl">📝</Text>
+            </View>
+          )}
         </View>
-      </SafeAreaView>
+
+        <Text className="text-2xl font-bold text-neutral-900 mb-2">
+          {passed ? "Great Job!" : "Keep Practicing"}
+        </Text>
+
+        <Text className="text-lg text-neutral-600 mb-1">
+          You scored {score} out of {questions.length}
+        </Text>
+
+        <Text
+          className={`text-base font-medium mb-8 ${
+            passed ? "text-success-600" : "text-warning-600"
+          }`}
+        >
+          {passed ? "You passed!" : "You need 70% to pass"}
+        </Text>
+
+        <Pressable
+          onPress={() => router.back()}
+          className="bg-[#1D61E7] rounded-full py-4 px-12"
+        >
+          <Text className="text-white font-semibold text-base">Done</Text>
+        </Pressable>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-3">
-        <Pressable
-          onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
-        >
-          <BackIcon />
-        </Pressable>
-        <Text
-          className="flex-1 text-lg font-semibold text-neutral-900 text-center mr-10"
-          numberOfLines={1}
-        >
-          {videoModule?.title ?? "Quiz"}
-        </Text>
-      </View>
-
-      {/* Progress indicator */}
-      <View className="px-4 pb-2">
-        <Text className="text-sm text-neutral-500">
-          Question {currentIndex + 1} of {questions.length}
-        </Text>
-        <View className="h-1.5 bg-neutral-200 rounded-full mt-2">
-          <View
-            className="h-1.5 bg-primary-500 rounded-full"
-            style={{
-              width: `${((currentIndex + 1) / questions.length) * 100}%`,
-            }}
-          />
-        </View>
-      </View>
-
-      <ScrollView
-        className="flex-1 px-4"
-        contentContainerStyle={{ paddingVertical: 16, paddingBottom: 32 }}
-      >
-        <MultipleChoiceQuestion
-          question={currentQuestion.question_text}
-          options={currentQuestion.options}
-          selectedOptionId={selectedOptionId}
-          onSelect={handleSelect}
-          showFeedback={showFeedback}
-        />
-
-        {/* Feedback text */}
-        {showFeedback && selectedOptionId && (
-          <View className="mt-4 p-4 bg-neutral-0 rounded-2xl">
-            <Text className="text-base text-neutral-700">
-              {currentQuestion.options.find((o) => o.id === selectedOptionId)
-                ?.feedback_text ?? ""}
+    <View className="flex-1">
+      {/* Gradient header */}
+      <BlueGradient className="pt-14">
+        <View className="flex-row items-center h-12 px-1">
+          <Pressable
+            onPress={() => router.back()}
+            className="w-10 h-10 items-center justify-center"
+          >
+            <ChevronIcon direction="left" />
+          </Pressable>
+          <View className="flex-1 items-center mr-10">
+            <Text className="text-base font-semibold text-white">
+              {videoModule?.title ? `Quick Check: ${videoModule.title}` : "Quiz"}
             </Text>
           </View>
-        )}
-      </ScrollView>
+        </View>
+      </BlueGradient>
 
-      {/* Bottom button */}
-      <View className="p-4">
-        {!showFeedback ? (
-          <PrimaryButton
-            label="Check Answer"
-            onPress={handleSubmit}
-            disabled={!selectedOptionId}
+      {/* White content area */}
+      <View className="flex-1 bg-white">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <MultipleChoiceQuestion
+            question={currentQuestion.question_text}
+            options={currentQuestion.options}
+            selectedOptionId={selectedOptionId}
+            onSelect={handleSelect}
+            showFeedback={showFeedback}
           />
-        ) : (
-          <PrimaryButton
-            label={isLastQuestion ? "See Results" : "Next Question"}
-            onPress={handleNext}
-          />
+
+          {showFeedback && selectedOptionId && (
+            <View className="mt-4 p-4 bg-neutral-0 rounded-2xl">
+              <Text className="text-base text-neutral-700">
+                {currentQuestion.options.find((o) => o.id === selectedOptionId)
+                  ?.feedback_text ?? ""}
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Green checkmark overlay when correct */}
+        {showFeedback && isCorrect && (
+          <View className="absolute top-0 left-0 right-0 bottom-0 items-center justify-center pointer-events-none">
+            <View className="mt-16">
+              <CorrectCheckmark />
+            </View>
+          </View>
         )}
       </View>
-    </SafeAreaView>
+
+      {/* Submit button area */}
+      <View className="bg-white px-4 pt-4 pb-2">
+        {!showFeedback ? (
+          <Pressable
+            onPress={handleSubmit}
+            disabled={!selectedOptionId}
+            className={`h-10 rounded-xl items-center justify-center ${
+              selectedOptionId ? "bg-[#1D61E7]" : "bg-[#1D61E7]/50"
+            }`}
+          >
+            <Text className="text-xs font-semibold text-white">
+              Submit Answer
+            </Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleNext}
+            className="bg-[#1D61E7] h-10 rounded-xl items-center justify-center"
+          >
+            <Text className="text-xs font-semibold text-white">
+              {isLastQuestion ? "See Results" : "Next Question"}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
   );
 }
 
-function BackIcon() {
+function CorrectCheckmark() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Svg width={120} height={120} viewBox="0 0 120 120" fill="none">
+      <Circle cx={60} cy={60} r={56} fill="#4CAF50" />
       <Path
-        d="M15 19l-7-7 7-7"
-        stroke={colors.iconDefault}
-        strokeWidth={2}
+        d="M35 62l18 18 32-40"
+        stroke="#FFFFFF"
+        strokeWidth={8}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

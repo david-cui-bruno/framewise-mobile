@@ -6,21 +6,21 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/components/auth/AuthProvider";
-import { ModuleTabs } from "@/components/video/ModuleTabs";
 import {
   telemetryQueue,
   generateSessionId,
 } from "@/lib/telemetry/eventQueue";
 import { colors } from "@/constants/colors";
-import Svg, { Path } from "react-native-svg";
+import { ChevronIcon } from "@/components/icons/ChevronIcon";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 import { useTextSize } from "@/contexts/TextSizeContext";
+import Svg, { Path, Rect, Line } from "react-native-svg";
 
-interface VideoModule {
+interface VideoModuleData {
   id: string;
   title: string;
   description: string | null;
@@ -36,10 +36,11 @@ export default function VideoScreen() {
   const videoRef = useRef<Video>(null);
   const sessionIdRef = useRef(generateSessionId());
 
-  const [videoModule, setVideoModule] = useState<VideoModule | null>(null);
+  const [videoModule, setVideoModule] = useState<VideoModuleData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"video" | "transcript">("video");
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const { scaledStyle } = useTextSize();
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function VideoScreen() {
         console.error("Error fetching video:", error);
       }
 
-      setVideoModule(data as VideoModule | null);
+      setVideoModule(data as VideoModuleData | null);
       setIsLoading(false);
     };
 
@@ -87,7 +88,6 @@ export default function VideoScreen() {
         setHasCompleted(true);
         trackEvent("complete", (status.positionMillis ?? 0) / 1000);
 
-        // Upsert video progress
         if (patient && videoId) {
           const now = new Date().toISOString();
           supabase
@@ -119,102 +119,194 @@ export default function VideoScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-50 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color={colors.primaryBlue} />
+      </View>
     );
   }
 
   if (!videoModule) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-50 items-center justify-center">
+      <View className="flex-1 bg-white items-center justify-center">
         <Text className="text-neutral-500 text-base">Video not found.</Text>
         <Pressable onPress={() => router.back()} className="mt-4">
-          <Text className="text-primary-500 font-semibold">Go Back</Text>
+          <Text className="text-[#1D61E7] font-semibold">Go Back</Text>
         </Pressable>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-3">
+    <View className="flex-1 bg-white">
+      {/* Video area */}
+      <View className="bg-black h-[220px] justify-between">
+        {/* Back button */}
         <Pressable
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
+          className="mt-14 ml-3 w-10 h-10 items-center justify-center"
         >
-          <BackIcon />
+          <ChevronIcon direction="left" color="#FFFFFF" />
         </Pressable>
-        <Text
-          className="flex-1 text-lg font-semibold text-neutral-900 text-center mr-10"
-          numberOfLines={1}
-        >
-          {videoModule.title}
-        </Text>
+
+        {/* Play button centered */}
+        <View className="absolute top-0 left-0 right-0 bottom-0 items-center justify-center">
+          <Video
+            ref={videoRef}
+            source={{ uri: videoModule.video_url }}
+            rate={patient?.playback_speed ?? 1.0}
+            useNativeControls
+            resizeMode={ResizeMode.CONTAIN}
+            onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+          />
+        </View>
       </View>
 
-      {/* Video Player */}
-      <View className="bg-black" style={{ aspectRatio: 16 / 9 }}>
-        <Video
-          ref={videoRef}
-          source={{ uri: videoModule.video_url }}
-          rate={patient?.playback_speed ?? 1.0}
-          useNativeControls
-          resizeMode={ResizeMode.CONTAIN}
-          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
-          style={{ flex: 1 }}
-        />
-      </View>
-
-      {/* Tabs */}
-      <ModuleTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        hasTranscript={!!videoModule.transcript}
-      />
-
-      {/* Tab Content */}
+      {/* Content area */}
       <ScrollView
-        className="flex-1 px-4"
-        contentContainerStyle={{ paddingVertical: 16, paddingBottom: 32 }}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
       >
         {activeTab === "video" ? (
-          <View>
-            <Text className="text-xl font-bold text-neutral-900 mb-2">
-              {videoModule.title}
-            </Text>
-            {videoModule.duration_seconds != null && (
-              <Text className="text-sm text-neutral-500 mb-4">
-                {Math.ceil(videoModule.duration_seconds / 60)} min
+          <>
+            {/* Title & description */}
+            <View className="px-4 pt-4 pb-3 bg-white border-b border-[#E6E6E6]">
+              <Text className="text-xl font-semibold text-black mb-2">
+                {videoModule.title}
               </Text>
-            )}
-            {videoModule.description && (
-              <Text className="text-base text-neutral-700 leading-6" style={scaledStyle("base")}>
-                {videoModule.description}
+              {videoModule.description && (
+                <>
+                  <Text
+                    className="text-xs text-[#2D353F] leading-4"
+                    numberOfLines={showFullDescription ? undefined : 3}
+                    style={scaledStyle("base")}
+                  >
+                    {videoModule.description}
+                  </Text>
+                  <Pressable
+                    onPress={() => setShowFullDescription(!showFullDescription)}
+                    className="flex-row items-center mt-2"
+                  >
+                    <Text className="text-xs font-semibold text-[#9198A2]">
+                      {showFullDescription ? "less" : "more"}
+                    </Text>
+                    <ChevronIcon
+                      direction={showFullDescription ? "up" : "down"}
+                      color="#9198A2"
+                      size={16}
+                    />
+                  </Pressable>
+                </>
+              )}
+            </View>
+
+            {/* Bookmark & Transcript actions */}
+            <View className="flex-row border-b border-[#E6E6E6] bg-white">
+              <Pressable className="flex-1 items-center py-2">
+                <BookmarkIcon />
+                <Text className="text-[10px] font-medium text-[#27282B] mt-1">
+                  Bookmark
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setActiveTab("transcript")}
+                className="flex-1 items-center py-2"
+              >
+                <TranscriptIcon />
+                <Text className="text-[10px] font-medium text-[#27282B] mt-1">
+                  Transcript
+                </Text>
+              </Pressable>
+            </View>
+          </>
+        ) : (
+          <View className="flex-1">
+            {/* Transcript header */}
+            <View className="flex-row items-center justify-between px-6 h-16 border-b border-[#E5E7EB]">
+              <Text className="text-xl font-semibold text-black">
+                Transcript
               </Text>
+              <Pressable
+                onPress={() => setActiveTab("video")}
+                className="w-6 h-6 items-center justify-center"
+              >
+                <CloseIcon color="#000000" size={20} />
+              </Pressable>
+            </View>
+
+            {/* Transcript lines */}
+            {videoModule.transcript ? (
+              (() => {
+                const lines = videoModule.transcript
+                  .split("\n")
+                  .filter((l) => l.trim().length > 0);
+                return lines.map((line, index) => {
+                  const isActive = index === 0;
+                  const minutes = Math.floor((index * 2) / 60);
+                  const seconds = (index * 2) % 60;
+                  const timeCode = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                  return (
+                    <View
+                      key={index}
+                      className={`flex-row items-start px-8 ${
+                        isActive ? "bg-[#EAF5FF]" : "bg-white"
+                      }`}
+                      style={{ minHeight: line.length > 38 ? 56 : 40 }}
+                    >
+                      {isActive && (
+                        <View className="absolute left-0 top-0 bottom-0 w-1 bg-[#1D61E7] rounded-r" />
+                      )}
+                      <Text className="text-sm text-[#6A7282] w-[50px] mt-2.5">
+                        {timeCode}
+                      </Text>
+                      <Text
+                        className={`flex-1 text-sm leading-[18px] ml-4 mt-2 ${
+                          isActive ? "font-medium text-[#1D61E7]" : "text-black"
+                        }`}
+                        style={scaledStyle("base")}
+                      >
+                        {line}
+                      </Text>
+                    </View>
+                  );
+                });
+              })()
+            ) : (
+              <View className="items-center py-12">
+                <Text className="text-sm text-neutral-500">
+                  No transcript available.
+                </Text>
+              </View>
             )}
           </View>
-        ) : (
-          <Text className="text-base text-neutral-700 leading-7" style={scaledStyle("base")}>
-            {videoModule.transcript ?? "No transcript available."}
-          </Text>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-function BackIcon() {
+function BookmarkIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M15 19l-7-7 7-7"
-        stroke={colors.iconDefault}
+        d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"
+        stroke="#27282B"
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </Svg>
+  );
+}
+
+function TranscriptIcon() {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+      <Rect x={4} y={4} width={16} height={16} rx={2} stroke="#27282B" strokeWidth={2} />
+      <Line x1={8} y1={9} x2={16} y2={9} stroke="#27282B" strokeWidth={2} strokeLinecap="round" />
+      <Line x1={8} y1={13} x2={14} y2={13} stroke="#27282B" strokeWidth={2} strokeLinecap="round" />
+      <Line x1={8} y1={17} x2={12} y2={17} stroke="#27282B" strokeWidth={2} strokeLinecap="round" />
     </Svg>
   );
 }

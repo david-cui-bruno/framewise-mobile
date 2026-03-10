@@ -1,21 +1,20 @@
 import { Tabs } from "expo-router";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
-import { colors } from "@/constants/colors";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.iconMuted,
+        tabBarActiveTintColor: "#000000",
+        tabBarInactiveTintColor: "#9198A2",
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
+          backgroundColor: "#FFFFFF",
+          borderTopColor: "#E6EEF6",
+          borderTopWidth: 2,
           paddingBottom: 4,
           paddingTop: 4,
-          height: 56,
+          height: 72,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -35,13 +34,6 @@ export default function TabsLayout() {
         options={{
           title: "Diary",
           tabBarIcon: ({ color }) => <TabBarIcon name="diary" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: "Chat",
-          tabBarIcon: ({ color }) => <TabBarIcon name="chat" color={color} />,
         }}
       />
       <Tabs.Screen

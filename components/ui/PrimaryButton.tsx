@@ -22,7 +22,7 @@ export function PrimaryButton({
     <Pressable
       onPress={onPress}
       disabled={disabled || isLoading}
-      className={`bg-primary-500 rounded-control h-12 items-center justify-center px-4 ${
+      className={`bg-[#1D61E7] rounded-full h-14 items-center justify-center px-4 ${
         fullWidth ? "w-full" : ""
       } ${disabled || isLoading ? "opacity-50" : ""} ${className}`}
       accessibilityRole="button"

@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface Nudge {
   id: string;
-  type: "tasks_remaining" | "mood_check_in";
+  type: "tasks_remaining";
   title: string;
   message: string;
   actionLabel: string;
@@ -48,30 +48,6 @@ export async function computeNudges(
       actionLabel: "View Tasks",
       actionRoute: "/home",
     });
-  }
-
-  // Check for missing mood check-in today
-  try {
-    const { data: moodLogs } = await supabase
-      .from("mood_logs")
-      .select("id")
-      .eq("patient_id", patientId)
-      .eq("log_date", today)
-      .limit(1);
-
-    if (!moodLogs || moodLogs.length === 0) {
-      nudges.push({
-        id: "mood_check_in",
-        type: "mood_check_in",
-        title: "How are you feeling?",
-        message:
-          "Take a moment to log your mood. It helps your care team understand your progress.",
-        actionLabel: "Check In",
-        actionRoute: "/diary",
-      });
-    }
-  } catch {
-    // mood_logs table may not exist yet — skip silently
   }
 
   return nudges;

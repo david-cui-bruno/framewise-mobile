@@ -10,6 +10,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        primaryBlue: "#1D61E7",
         primary: {
           DEFAULT: "#067BF5",
           50: "#EAF5FF",
@@ -53,8 +54,6 @@ module.exports = {
         },
         sky: {
           50: "#EAF5FF",
-          200: "#A8D6EA",
-          400: "#5FAAF8",
           500: "#3B94F0",
           600: "#2A7DD8",
         },
