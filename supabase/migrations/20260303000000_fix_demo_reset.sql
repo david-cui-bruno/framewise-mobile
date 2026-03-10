@@ -23,6 +23,7 @@ BEGIN
   DELETE FROM public.symptom_check_ins      WHERE patient_id = v_patient_id;
   DELETE FROM public.diary_entries          WHERE patient_id = v_patient_id;
   DELETE FROM public.mood_logs              WHERE patient_id = v_patient_id;
+  DELETE FROM public.health_metrics          WHERE patient_id = v_patient_id;
   DELETE FROM public.push_tokens            WHERE patient_id = v_patient_id;
   DELETE FROM public.patient_notification_prefs WHERE patient_id = v_patient_id;
   DELETE FROM public.emergency_contacts     WHERE patient_id = v_patient_id;

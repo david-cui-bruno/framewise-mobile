@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, ScrollView, ActivityIndicator, Text, Pressable } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { ChecklistItem } from "@/components/tasks/ChecklistItem";
@@ -51,19 +52,14 @@ interface VideoModule {
   duration_seconds: number;
 }
 
-interface VideoProgressRecord {
-  video_module_id: string;
-  is_completed: boolean;
-}
-
 export default function HomeScreen() {
   const { patient } = useAuthContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [assignment, setAssignment] = useState<CareAssignment | null>(null);
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [medications, setMedications] = useState<MedicationSchedule[]>([]);
   const [videos, setVideos] = useState<VideoModule[]>([]);
-  const [, setVideoProgress] = useState<VideoProgressRecord[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [dismissedNudges, setDismissedNudges] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -117,13 +113,6 @@ export default function HomeScreen() {
         .order("sort_order");
 
       setVideos((videosData as VideoModule[] | null) ?? []);
-
-      const { data: progressData } = await supabase
-        .from("video_progress")
-        .select("video_module_id, is_completed")
-        .eq("patient_id", patient.id);
-
-      setVideoProgress((progressData as VideoProgressRecord[] | null) ?? []);
     }
 
     const { data: notifPrefs } = await supabase
@@ -190,7 +179,7 @@ export default function HomeScreen() {
       {/* Gradient header */}
       <BlueGradient className="pb-3">
         {/* Top bar: profile, logo, bell */}
-        <View className="flex-row items-center justify-between px-4 mt-14">
+        <View className="flex-row items-center justify-between px-4" style={{ marginTop: insets.top }}>
           <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
             <ProfileIcon />
           </View>
@@ -243,12 +232,25 @@ export default function HomeScreen() {
             />
           ))}
 
+        {/* Appointment Banner */}
+        <View className="bg-white rounded-2xl p-4 mt-4 flex-row items-center">
+          <View className="w-10 h-10 rounded-full bg-[#E6F3FF] items-center justify-center mr-3">
+            <CalendarIcon />
+          </View>
+          <Text className="flex-1 text-[13px] text-[#0B1220]">
+            You have an upcoming appointment on March 10th.
+          </Text>
+          <Pressable className="bg-[#1D61E7] rounded-lg px-3 py-1.5 ml-2">
+            <Text className="text-[11px] font-semibold text-white">View Details</Text>
+          </Pressable>
+        </View>
+
         {/* Video Library */}
-        {videos.length > 0 && (
+        <Text className="text-base font-semibold text-black mt-5 mb-2">
+          Video Library
+        </Text>
+        {videos.length > 0 ? (
           <>
-            <Text className="text-base font-semibold text-black mt-5 mb-2">
-              Video Library
-            </Text>
             <Pressable
               onPress={() => {
                 if (videos[0]) router.push(`/video/${videos[0].id}`);
@@ -271,6 +273,11 @@ export default function HomeScreen() {
               </View>
             )}
           </>
+        ) : (
+          <View className="bg-[#E6EEF6] rounded-lg h-48 items-center justify-center">
+            <PlayIcon />
+            <Text className="text-sm text-[#6B7280] mt-2">No videos yet</Text>
+          </View>
         )}
 
         {/* Medications */}
@@ -348,7 +355,7 @@ export default function HomeScreen() {
                 if (tmpl.task_type === "watch_video" && tmpl.target_video_id) {
                   href = `/video/${tmpl.target_video_id}`;
                 } else if (tmpl.task_type === "answer_quiz" && tmpl.target_quiz_id) {
-                  href = `/quiz/${tmpl.target_quiz_id}`;
+                  href = `/quiz/${tmpl.target_quiz_id}?taskId=${task.id}`;
                 }
                 return (
                   <ChecklistItem
@@ -364,6 +371,14 @@ export default function HomeScreen() {
         )}
       </ScrollView>
     </View>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="#1D61E7" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { View, Text, ScrollView, ActivityIndicator, Pressable } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { colors } from "@/constants/colors";
@@ -32,11 +33,14 @@ interface MedicationSchedule {
 export default function DiaryScreen() {
   const { patient } = useAuthContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [adherenceRecords, setAdherenceRecords] = useState<AdherenceRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
+  const [weightData, setWeightData] = useState<{ value: number; unit: string } | null>(null);
+  const [bpData, setBpData] = useState<{ systolic: number; diastolic: number } | null>(null);
 
   const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
 
@@ -59,6 +63,8 @@ export default function DiaryScreen() {
     if (!patient) return;
     setIsLoading(true);
     setError(null);
+    setWeightData(null);
+    setBpData(null);
 
     try {
       // Fetch medication schedules + adherence
@@ -99,6 +105,24 @@ export default function DiaryScreen() {
         .eq("patient_id", patient.id)
         .eq("status", "taken");
       setStreak(Math.min(count ?? 0, 99));
+
+      // Fetch health metrics (weight + blood pressure) for selected date
+      const { data: metricsData } = await supabase
+        .from("health_metrics")
+        .select("metric_type, value, unit")
+        .eq("patient_id", patient.id)
+        .eq("recorded_date", dateString);
+
+      const weightRow = metricsData?.find((m: any) => m.metric_type === "weight");
+      setWeightData(weightRow ? { value: Number(weightRow.value), unit: weightRow.unit } : null);
+
+      const bpRow = metricsData?.find((m: any) => m.metric_type === "blood_pressure");
+      if (bpRow) {
+        try {
+          const readings = typeof bpRow.value === "string" ? JSON.parse(bpRow.value) : bpRow.value;
+          setBpData(readings?.first ? { systolic: readings.first.systolic, diastolic: readings.first.diastolic } : null);
+        } catch { setBpData(null); }
+      } else { setBpData(null); }
     } catch {
       setError("We couldn't load your data. Please try again.");
     } finally {
@@ -154,7 +178,7 @@ export default function DiaryScreen() {
   return (
     <View className="flex-1">
       {/* Gradient header */}
-      <BlueGradient className="pt-14 pb-2">
+      <BlueGradient className="pb-2" style={{ paddingTop: insets.top }}>
         {/* Date navigation bar */}
         <View className="flex-row items-center justify-between px-4 py-1">
           <View className="flex-row items-center flex-1">
@@ -206,7 +230,6 @@ export default function DiaryScreen() {
             {/* Medication sections */}
             {(["Morning", "Afternoon", "Evening"] as const).map((timeOfDay) => {
               const meds = groupedMeds[timeOfDay];
-              if (meds.length === 0) return null;
               return (
                 <View key={timeOfDay} className="bg-white rounded-lg overflow-hidden">
                   <View className="flex-row items-center justify-between px-4 pt-3.5 pb-3">
@@ -215,30 +238,36 @@ export default function DiaryScreen() {
                     </Text>
                     <ChevronIcon direction="right" color="#000" size={20} />
                   </View>
-                  {meds.map((med, idx) => (
-                    <View key={med.medication_schedule_id}>
-                      {idx > 0 && <View className="h-px bg-[#E6EEF6] mx-4" />}
-                      <Pressable
-                        onPress={() => handleAdherenceToggle(med.medication_schedule_id)}
-                        className="flex-row items-center h-10 px-4"
-                      >
-                        <CircleCheckIcon checked={med.status === "taken"} />
-                        <Text
-                          className={`text-sm font-semibold ml-4 ${
-                            med.status === "taken" ? "text-[#1D61E7]" : "text-black"
-                          }`}
-                        >
-                          {med.medication_name}
-                        </Text>
-                      </Pressable>
+                  {meds.length === 0 ? (
+                    <View className="px-4 pb-3">
+                      <Text className="text-sm text-[#6B7280]">No medications</Text>
                     </View>
-                  ))}
+                  ) : (
+                    meds.map((med, idx) => (
+                      <View key={med.medication_schedule_id}>
+                        {idx > 0 && <View className="h-px bg-[#E6EEF6] mx-4" />}
+                        <Pressable
+                          onPress={() => handleAdherenceToggle(med.medication_schedule_id)}
+                          className="flex-row items-center h-10 px-4"
+                        >
+                          <CircleCheckIcon checked={med.status === "taken"} />
+                          <Text
+                            className={`text-sm font-semibold ml-4 ${
+                              med.status === "taken" ? "text-[#1D61E7]" : "text-black"
+                            }`}
+                          >
+                            {med.medication_name}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ))
+                  )}
                 </View>
               );
             })}
 
             {/* Health section */}
-            <Text className="text-base font-semibold text-[#0B1220] mt-4">
+            <Text className="text-base font-semibold text-[#0B1220] mt-2">
               Health
             </Text>
             <View className="flex-row gap-6">
@@ -254,8 +283,8 @@ export default function DiaryScreen() {
                   </View>
                   <PlusIcon />
                 </View>
-                <Text className="text-2xl font-semibold text-[#9198A2] text-center mt-3.5">
-                  0 lbs
+                <Text className={`text-2xl font-semibold text-center mt-3.5 ${weightData ? "text-[#0B1220]" : "text-[#9198A2]"}`}>
+                  {weightData ? `${weightData.value} ${weightData.unit}` : "Add weight"}
                 </Text>
               </Pressable>
 
@@ -271,8 +300,8 @@ export default function DiaryScreen() {
                   </View>
                   <PlusIcon />
                 </View>
-                <Text className="text-base font-semibold text-[#9198A2] text-center mt-3.5">
-                  Take your blood pressure
+                <Text className={`font-semibold text-center mt-3.5 ${bpData ? "text-2xl text-[#0B1220]" : "text-base text-[#9198A2]"}`}>
+                  {bpData ? `${bpData.systolic}/${bpData.diastolic} mmHg` : "Take your blood pressure"}
                 </Text>
               </Pressable>
             </View>

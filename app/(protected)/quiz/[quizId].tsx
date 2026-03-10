@@ -27,7 +27,7 @@ interface VideoModule {
 }
 
 export default function QuizScreen() {
-  const { quizId } = useLocalSearchParams<{ quizId: string }>();
+  const { quizId, taskId } = useLocalSearchParams<{ quizId: string; taskId?: string }>();
   const { patient } = useAuthContext();
   const router = useRouter();
 
@@ -138,8 +138,18 @@ export default function QuizScreen() {
     });
   }, [selectedOptionId, currentQuestion, patient, quizId]);
 
+  const markTaskCompleted = async (id: string) => {
+    await supabase
+      .from("patient_daily_tasks")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", id);
+  };
+
   const handleNext = () => {
     if (isLastQuestion) {
+      if (taskId) {
+        markTaskCompleted(taskId);
+      }
       setIsFinished(true);
     } else {
       setCurrentIndex((prev) => prev + 1);
@@ -171,32 +181,18 @@ export default function QuizScreen() {
   }
 
   if (isFinished) {
-    const passed = score >= Math.ceil(questions.length * 0.7);
-
     return (
       <View className="flex-1 bg-white items-center justify-center px-6">
         <View className="mb-6">
-          {passed ? <CorrectCheckmark /> : (
-            <View className="w-[120px] h-[120px] rounded-full bg-warning-100 items-center justify-center">
-              <Text className="text-5xl">📝</Text>
-            </View>
-          )}
+          <CorrectCheckmark />
         </View>
 
         <Text className="text-2xl font-bold text-neutral-900 mb-2">
-          {passed ? "Great Job!" : "Keep Practicing"}
+          Quiz Complete!
         </Text>
 
-        <Text className="text-lg text-neutral-600 mb-1">
+        <Text className="text-lg text-neutral-600 mb-8">
           You scored {score} out of {questions.length}
-        </Text>
-
-        <Text
-          className={`text-base font-medium mb-8 ${
-            passed ? "text-success-600" : "text-warning-600"
-          }`}
-        >
-          {passed ? "You passed!" : "You need 70% to pass"}
         </Text>
 
         <Pressable

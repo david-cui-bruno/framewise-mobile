@@ -18,7 +18,7 @@ CREATE INDEX idx_push_tokens_patient ON push_tokens(patient_id) WHERE is_active 
 CREATE TRIGGER set_push_tokens_updated_at
   BEFORE UPDATE ON push_tokens
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
+  EXECUTE FUNCTION "public"."update_updated_at_column"();
 
 -- RLS
 ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;

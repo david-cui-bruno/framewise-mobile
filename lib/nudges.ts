@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isInQuietHours } from "@/lib/time";
 
 export interface Nudge {
   id: string;
@@ -18,12 +19,7 @@ export async function computeNudges(
   if (quietHours) {
     const d = new Date();
     const nowMinutes = d.getHours() * 60 + d.getMinutes();
-    const sParts = quietHours.start.split(":");
-    const eParts = quietHours.end.split(":");
-    const s = parseInt(sParts[0], 10) * 60 + parseInt(sParts[1] ?? "0", 10);
-    const e = parseInt(eParts[0], 10) * 60 + parseInt(eParts[1] ?? "0", 10);
-    const inQuiet = s <= e ? nowMinutes >= s && nowMinutes < e : nowMinutes >= s || nowMinutes < e;
-    if (inQuiet) return [];
+    if (isInQuietHours(nowMinutes, quietHours.start, quietHours.end)) return [];
   }
 
   const nudges: Nudge[] = [];

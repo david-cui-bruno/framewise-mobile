@@ -1,5 +1,6 @@
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { AVATARS } from "@/components/avatar/AvatarSelector";
 import { BlueGradient } from "@/components/ui/BlueGradient";
@@ -14,19 +15,19 @@ const MENU_ITEMS = [
 export default function ProfileScreen() {
   const { patient, signOut } = useAuthContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const avatarEmoji =
     AVATARS.find((a) => a.id === patient?.avatar_id)?.emoji ?? "👤";
   const displayName = patient?.display_name || "Patient";
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace("/login");
   };
 
   return (
     <View className="flex-1">
       {/* Gradient background with avatar */}
-      <BlueGradient className="items-center pt-20 pb-10">
+      <BlueGradient className="items-center pb-10" style={{ paddingTop: insets.top + 16 }}>
         {/* Avatar */}
         <View className="w-28 h-28 rounded-full bg-white/20 items-center justify-center">
           <Text className="text-5xl">{avatarEmoji}</Text>

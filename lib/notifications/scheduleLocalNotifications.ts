@@ -1,4 +1,5 @@
 import * as Notifications from "expo-notifications";
+import { isInQuietHours } from "@/lib/time";
 
 interface MedicationSchedule {
   medication_name: string;
@@ -17,15 +18,6 @@ const TIME_MAP: Record<string, { hour: number; minute: number }> = {
   evening: { hour: 19, minute: 0 },
 };
 
-function isInQuietHours(hour: number, minute: number, start: string, end: string): boolean {
-  const sParts = start.split(":");
-  const eParts = end.split(":");
-  const s = parseInt(sParts[0], 10) * 60 + parseInt(sParts[1] ?? "0", 10);
-  const e = parseInt(eParts[0], 10) * 60 + parseInt(eParts[1] ?? "0", 10);
-  const current = hour * 60 + minute;
-  return s <= e ? current >= s && current < e : current >= s || current < e;
-}
-
 export async function scheduleLocalNotifications(
   medications: MedicationSchedule[],
   prefs: NotifPrefs | null
@@ -43,7 +35,7 @@ export async function scheduleLocalNotifications(
     if (
       prefs.quiet_hours_start &&
       prefs.quiet_hours_end &&
-      isInQuietHours(time.hour, time.minute, prefs.quiet_hours_start, prefs.quiet_hours_end)
+      isInQuietHours(time.hour * 60 + time.minute, prefs.quiet_hours_start, prefs.quiet_hours_end)
     ) {
       continue;
     }

@@ -1,27 +1,19 @@
 import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Redirect, Stack, useRouter } from "expo-router";
 import { useAuthContext } from "@/components/auth/AuthProvider";
 import { colors } from "@/constants/colors";
 
 export default function ProtectedLayout() {
   const { user, patient, isLoading } = useAuthContext();
   const router = useRouter();
-  const segments = useSegments();
-
   useEffect(() => {
     if (isLoading) return;
 
-    const inProtectedGroup = segments[0] === "(protected)";
-
-    if (!user && inProtectedGroup) {
-      // Not authenticated, redirect to login
-      router.replace("/login");
-    } else if (user && patient && !patient.onboarding_completed) {
-      // Authenticated but not onboarded
+    if (user && patient && !patient.onboarding_completed) {
       router.replace("/onboarding");
     }
-  }, [user, patient, isLoading, segments]);
+  }, [user, patient, isLoading]);
 
   if (isLoading) {
     return (
@@ -32,7 +24,7 @@ export default function ProtectedLayout() {
   }
 
   if (!user) {
-    return null; // Will redirect in useEffect
+    return <Redirect href="/login" />;
   }
 
   return (

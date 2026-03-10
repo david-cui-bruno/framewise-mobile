@@ -203,12 +203,12 @@ export default function VideoScreen() {
 
             {/* Bookmark & Transcript actions */}
             <View className="flex-row border-b border-[#E6E6E6] bg-white">
-              <Pressable className="flex-1 items-center py-2">
+              <View className="flex-1 items-center py-2">
                 <BookmarkIcon />
                 <Text className="text-[10px] font-medium text-[#27282B] mt-1">
                   Bookmark
                 </Text>
-              </Pressable>
+              </View>
               <Pressable
                 onPress={() => setActiveTab("transcript")}
                 className="flex-1 items-center py-2"

@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import type { NotificationResponse } from "expo-notifications";
 
-const ALLOWED_ROUTES = new Set(["/home", "/diary", "/chat", "/profile"]);
+const ALLOWED_ROUTES = new Set(["/home", "/diary", "/profile"]);
 
 export function handleNotificationResponse(response: NotificationResponse) {
   const data = response.notification.request.content.data as
